@@ -1,16 +1,20 @@
 require('dotenv').config()
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer-extra');
 
-const game = process.env.GAME
-const dropsEnabledTagID = 'c2542d6d-cd10-4532-919b-3d19f30a768b'
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
+
 const savedCookies = require('./cookies.json')
 const savedLocalStorage = require('./localStorage.json')
 
-const streamsUrl = `https://www.twitch.tv/directory/game/${game}?tl=${dropsEnabledTagID}`
+const game = process.env.GAME
+const dropsEnabledTagID = 'c2542d6d-cd10-4532-919b-3d19f30a768b'
+
 main()
 
 async function goToRandomLiveStreamer(page) {
-  await page.goto(streamsUrl, { waitUntil: 'networkidle2' });
+  const streamsDirectoryUrl = `https://www.twitch.tv/directory/game/${game}?tl=${dropsEnabledTagID}`
+  await page.goto(streamsDirectoryUrl, { waitUntil: 'networkidle2' });
 
   const streamHrefs = await page.$$eval('.tw-tower a[data-a-target="preview-card-image-link"]', links => links.map(link => link.href))
 
@@ -19,9 +23,13 @@ async function goToRandomLiveStreamer(page) {
     return
   }
 
-  await page.goto(streamHrefs[Math.floor(Math.random() * streamHrefs.length)])
+  const streamerLink = streamHrefs[Math.floor(Math.random() * streamHrefs.length)]
+  console.debug(`Watching ${streamerLink.split('/').pop()} ✨`)
+
+  await page.goto(streamerLink)
 
   await waitAsync(2000)
+  // Sometimes it shows a click to unmute overlay. TODO: Investigate a better way to fix, maybe with cookies or localStorage
   await emulateClickAsync(page, '[data-a-target="player-overlay-click-handler"]')
 }
 
@@ -40,7 +48,7 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_EXEC_PATH,
     headless: true,
-    args: ['--no-sandbox'],
+    userDataDir: './puppeteer_tmp',
     dumpio: false,
     defaultViewport: {
       width: 1080,
@@ -48,18 +56,22 @@ async function main() {
     }
   });
   const page = await browser.newPage();
-  await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36');
   await page.setCookie(...savedCookies)
+
+  // Setup localStorage for twitch.tv
   await page.goto('https://twitch.tv/');
   await waitAsync(100)
   await page.evaluate((_savedLocalStorage) => {
     JSON.parse(_savedLocalStorage).forEach(([key, value]) => {
       localStorage.setItem(key, value)
     })
+    // Override important values
+    localStorage.setItem('mature', 'true')
+    localStorage.setItem('video-quality', "{\"default\":\"160p30\"}")
   }, [JSON.stringify(savedLocalStorage)]);
   await waitAsync(500)
 
-  // Go to twitch
+  // Go watch a streamer
   await goToRandomLiveStreamer(page)
 
   // Watch for live status, and go to another streamer if needed
