@@ -47,6 +47,14 @@ async function main() {
   // Prepare browser
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_EXEC_PATH,
+    args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-infobars',
+        '--window-position=0,0',
+        '--ignore-certifcate-errors',
+        '--ignore-certifcate-errors-spki-list',
+    ],
     headless: true,
     userDataDir: './puppeteer_tmp',
     dumpio: false,
