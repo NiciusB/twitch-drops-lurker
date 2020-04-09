@@ -1,11 +1,11 @@
 const statuses = []
 function updateStatus (status) {
   console.debug(status)
-  statuses.push(status)
-  if (statuses.length > 100) statuses.shift()
+  statuses.unshift(status)
+  if (statuses.length > 100) statuses.pop()
 }
 
-module.exports = {
+export default {
   updateStatus,
   statuses
 }

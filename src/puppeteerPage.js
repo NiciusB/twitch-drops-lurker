@@ -1,9 +1,9 @@
-const puppeteer = require('puppeteer-extra')
-const fs = require('fs')
-const path = require('path')
-const { waitAsync } = require('./utils')
+import puppeteer from 'puppeteer-extra'
+import fs from 'fs'
+import path from 'path'
+import { waitAsync } from './utils'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 puppeteer.use(StealthPlugin())
 
 const cookiesPath = path.join(__dirname, '..', 'cookies.json')
@@ -15,8 +15,8 @@ if (!fs.existsSync(cookiesPath) || !fs.existsSync(localStoragePath)) {
 const savedCookies = require(cookiesPath)
 const savedLocalStorage = require(localStoragePath)
 
-module.exports.getPreparedTwitchPage = getPreparedTwitchPage
-async function getPreparedTwitchPage () {
+export let page = null
+export async function preparePage () {
   // Prepare browser
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_EXEC_PATH,
@@ -36,7 +36,7 @@ async function getPreparedTwitchPage () {
       height: 720
     }
   })
-  const page = await browser.newPage()
+  page = await browser.newPage()
   await page.setCookie(...savedCookies)
 
   // Setup localStorage for twitch.tv
