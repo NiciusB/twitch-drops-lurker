@@ -87,12 +87,12 @@ async function main() {
     if (!(await isPageOnValidStreamer(page))) {
       await goToRandomLiveStreamer(page)
     }
-  }, 1000 * 6)
+  }, 1000 * 60)
 
   // For debugging, take a pic every other second
   setInterval(() => {
     page.screenshot({path: './status.jpg'});
-  }, 2000)
+  }, 3000)
 }
 
 function waitAsync(ms) {
