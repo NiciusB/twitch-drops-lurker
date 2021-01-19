@@ -39,24 +39,23 @@ async function goToRandomLiveStreamer () {
 async function isPageOnValidStreamer () {
   if (!activeStreamerName) return false // We're currently navigating to a streamer, so no
 
-  const liveIndicatorElm = await page.$('.channel-header__user .live-indicator')
+  const liveIndicatorElm = await page.$('.live-indicator-container')
   if (!liveIndicatorElm) {
     logger.updateStatus(`⚠️ ${activeStreamerName} is no longer live`)
     return false
   }
 
-  const gameCategoryHref = await page.$eval('[data-test-selector="labeled-link-title"]', elm => elm.href)
+  const gameCategoryHref = await page.$eval('[data-a-target="stream-game-link"]', elm => elm.href)
   if (!gameCategoryHref || gameCategoryHref !== `https://www.twitch.tv/directory/game/${game}`) {
     logger.updateStatus(`⚠️ ${activeStreamerName} is no longer playing ${game}`)
     return false
   }
 
-  const dropsActivatedCategoryHrefs = await page.$$eval('.channel-info-bar__info-container a.tw-border-radius-rounded', links => links.map(link => link.href))
-  if (!dropsActivatedCategoryHrefs.some(href => href === `https://www.twitch.tv/directory/all/tags/${dropsEnabledTagID}`)) {
+  const dropsActivatedCategory = await page.$('[data-a-target="Drops Enabled"]')
+  if (!dropsActivatedCategory) {
     logger.updateStatus(`⚠️ ${activeStreamerName} is no longer having drops for ${game}`)
     return false
   }
-
   return true
 }
 
