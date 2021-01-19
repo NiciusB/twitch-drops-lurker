@@ -29,7 +29,6 @@ export async function preparePage () {
       '--ignore-certifcate-errors-spki-list'
     ],
     headless: true,
-    userDataDir: './puppeteer_tmp',
     dumpio: false,
     defaultViewport: {
       width: 1080,
@@ -37,6 +36,7 @@ export async function preparePage () {
     }
   })
   page = await browser.newPage()
+  await page.setUserAgent('Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.197 Safari/537.36')
   await page.setCookie(...savedCookies)
 
   // Setup localStorage for twitch.tv
