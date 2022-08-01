@@ -1,3 +1,9 @@
+# Deprecation
+
+This project is not actively being worked on. While it's still functional, @mt025 has a fork with many improvements.
+
+You might want to take a look at it here: https://github.com/mt025/twitch-drops-lurker
+
 # twitch-drops-lurker
 
 ## Installation
